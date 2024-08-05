@@ -3,6 +3,7 @@ package com.buyukozkan.springbootunittest;
 import com.buyukozkan.springbootunittest.model.Book;
 import com.buyukozkan.springbootunittest.repository.BookRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,14 +35,28 @@ public class BookControllerTests {
     @Autowired
     private ObjectMapper objectMapper;
 
+    private List<Book> books;
+    private Book book;
+    private Book updatedBook;
+
+    @BeforeEach
+    void setUp(){
+        books = new ArrayList<>(
+                Arrays.asList(
+                        new Book(1, "Spring Boot @WebMvcTest 1", "Description1", "Author1"),
+                        new Book(2, "Spring Boot @WebMvcTest 2", "Description2", "Author2")));
+
+        book = new Book(1, "Spring Boot @WebMvcTest", "Author", "Description");
+        updatedBook = new Book(1, "Spring Boot @WebMvcTest Updated", "Author Updated", "Description Updated");
+
+    }
+
+
+
+
     @Test
     @DisplayName(value = "This test should return list of books.")
     void shouldReturnListOfBooks() throws Exception {
-        List<Book> books = new ArrayList<>(
-            Arrays.asList(
-                new Book(1, "Spring Boot @WebMvcTest 1", "Description1", "Author1"),
-                new Book(2, "Spring Boot @WebMvcTest 2", "Description2", "Author2")));
-
         when(bookRepository.findAll()).thenReturn(books);
         mockMvc.perform(get("/api/books"))
             .andExpect(status().isOk())
@@ -52,8 +67,6 @@ public class BookControllerTests {
     @Test
     @DisplayName(value = "This test should return created book.")
     void shouldCreateBook() throws Exception {
-        Book book = new Book(1, "Spring Boot @WebMvcTest", "Author", "Description");
-
         mockMvc.perform(post("/api/books")
             .contentType(MediaType.APPLICATION_JSON)
             .content(objectMapper.writeValueAsString(book)))
@@ -65,8 +78,6 @@ public class BookControllerTests {
     @DisplayName("Should return the book for a given ID")
     void shouldReturnBook() throws Exception {
         long id = 1L;
-        Book book = new Book(id, "Spring Boot @WebMvcTest", "Author", "Description");
-
         when(bookRepository.findById(id)).thenReturn(Optional.of(book));
 
         mockMvc.perform(get("/api/books/{id}", id))
@@ -82,9 +93,6 @@ public class BookControllerTests {
     @DisplayName("Should return updated book")
     void shouldUpdateBook() throws Exception {
         long id = 1L;
-        Book book = new Book(id, "Spring Boot @WebMvcTest", "Author", "Description");
-        Book updatedBook = new Book(id, "Spring Boot @WebMvcTest Updated", "Author Updated", "Description Updated");
-
         when(bookRepository.findById(id)).thenReturn(Optional.of(book));
         when(bookRepository.save(any(Book.class))).thenReturn(updatedBook);
 
@@ -101,8 +109,6 @@ public class BookControllerTests {
     @Test
     void shouldDeleteBook() throws Exception {
         long id = 1L;
-        Book book = new Book(id, "Spring Boot @WebMvcTest", "Author", "Description");
-
         when(bookRepository.findById(id)).thenReturn(Optional.of(book));
 
         mockMvc.perform(get("/api/books/{id}", id))
